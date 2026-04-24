@@ -3,15 +3,15 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String   @unique
-  password  String   // bcrypt hashed
+  password  String
   role      Role     @default(FACULTY)
   createdAt DateTime @default(now())
 
@@ -27,17 +27,17 @@ enum Role {
 }
 
 model Student {
-  id           String   @id @default(cuid())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   name         String
-  rollNo       String   @unique  // Unique Registration ID
+  rollNo       String   @unique
   email        String?  @unique
   gender       String?
   contactNo    String?
   address      String?
   state        String?
   country      String?
-  profileImage String?  // base64 JPEG data URL
-  qrCode       String?  // base64 PNG
+  profileImage String?
+  qrCode       String?
   createdAt    DateTime @default(now())
 
   enrollments Enrollment[]
@@ -45,11 +45,11 @@ model Student {
 }
 
 model Course {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   code      String   @unique
   faculty   User     @relation(fields: [facultyId], references: [id])
-  facultyId String
+  facultyId String   @db.ObjectId
   createdAt DateTime @default(now())
 
   enrollments Enrollment[]
@@ -58,21 +58,21 @@ model Course {
 }
 
 model Enrollment {
-  id        String  @id @default(cuid())
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
   student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId String
+  studentId String  @db.ObjectId
   course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  String
+  courseId  String  @db.ObjectId
 
   @@unique([studentId, courseId])
 }
 
 model AttendanceSession {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId    String
+  courseId    String   @db.ObjectId
   createdBy   User     @relation(fields: [createdById], references: [id])
-  createdById String
+  createdById String   @db.ObjectId
   token       String   @unique @default(cuid())
   expiresAt   DateTime
   isActive    Boolean  @default(true)
@@ -80,25 +80,24 @@ model AttendanceSession {
 
   attendances Attendance[]
 
-  @@index([token])
   @@index([courseId, isActive])
 }
 
 model Attendance {
-  id           String           @id @default(cuid())
-  student      Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId    String
-  course       Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId     String
-  markedBy     User             @relation(fields: [markedById], references: [id])
-  markedById   String
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
+  student      Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId    String             @db.ObjectId
+  course       Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId     String             @db.ObjectId
+  markedBy     User               @relation(fields: [markedById], references: [id])
+  markedById   String             @db.ObjectId
   session      AttendanceSession? @relation(fields: [sessionId], references: [id])
-  sessionId    String?
-  date         DateTime         @default(now())  // check-in timestamp
-  checkOutTime DateTime?        // null = not yet checked out
-  workMinutes  Int?             // calculated on checkout
-  status       AttendanceStatus @default(PRESENT)
-  method       MarkMethod       @default(MANUAL)
+  sessionId    String?            @db.ObjectId
+  date         DateTime           @default(now())
+  checkOutTime DateTime?
+  workMinutes  Int?
+  status       AttendanceStatus   @default(PRESENT)
+  method       MarkMethod         @default(MANUAL)
 
   @@index([studentId, courseId, date])
 }

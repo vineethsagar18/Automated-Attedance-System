@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Doto, Space_Grotesk, Space_Mono } from 'next/font/google'
 import './globals.css'
+import Providers from '@/components/Providers'
 
 const doto = Doto({
   subsets: ['latin'],
@@ -29,12 +30,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <body className={`${doto.variable} ${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}>
-        <div className="min-h-screen w-full relative">
-          <div className="absolute inset-0 z-0 app-aurora-bg" />
-          <div className="relative z-10">{children}</div>
-        </div>
+        <Providers>
+          <div className="min-h-screen w-full relative">
+            <div className="absolute inset-0 z-0 app-aurora-bg" />
+            <div className="relative z-10">{children}</div>
+          </div>
+        </Providers>
       </body>
     </html>
   )

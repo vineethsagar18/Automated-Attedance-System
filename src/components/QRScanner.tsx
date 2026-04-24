@@ -13,6 +13,7 @@ export function QRScanner({ onScan }: QRScannerProps) {
   const [isActive, setIsActive] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null)
   const lastScanRef = useRef<string>('')
   const streamRef = useRef<MediaStream | null>(null)
   const scanIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -171,6 +172,77 @@ export function QRScanner({ onScan }: QRScannerProps) {
     setError(null)
   }
 
+  async function handleImageUpload(file: File) {
+    setUploadStatus(null)
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    if (!ctx) return
+
+    const img = new window.Image()
+    const url = URL.createObjectURL(file)
+
+    img.onload = () => {
+      canvas.width = img.width
+      canvas.height = img.height
+      ctx.drawImage(img, 0, 0)
+      URL.revokeObjectURL(url)
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+      // First attempt: decode as-is
+      let code = jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: 'attemptBoth'
+      })
+
+      // Second attempt: contrast enhancement (same logic as camera scanner)
+      if (!code) {
+        const data = imageData.data
+        let totalBrightness = 0
+        for (let i = 0; i < data.length; i += 4) {
+          totalBrightness += data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114
+        }
+        const avgBrightness = totalBrightness / (data.length / 4)
+        for (let i = 0; i < data.length; i += 4) {
+          const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114
+          const enhanced = Math.min(255, Math.max(0, (gray - avgBrightness) * 1.5 + avgBrightness))
+          data[i] = enhanced
+          data[i + 1] = enhanced
+          data[i + 2] = enhanced
+        }
+        code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'attemptBoth'
+        })
+      }
+
+      if (code) {
+        try {
+          const payload = JSON.parse(code.data)
+          if (payload.studentId) {
+            setUploadStatus(`Scanned successfully: ${payload.rollNo ?? payload.studentId}`)
+            onScan(payload.studentId)
+            // Auto-clear success after 5 seconds
+            setTimeout(() => setUploadStatus(null), 5000)
+          } else {
+            setUploadStatus('QR code found but does not contain a valid student ID.')
+          }
+        } catch {
+          setUploadStatus('QR code found but content is not a valid student QR.')
+        }
+      } else {
+        setUploadStatus('No QR code detected in the image. Please try a clearer photo.')
+      }
+    }
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      setUploadStatus('Failed to load the image file.')
+    }
+
+    img.src = url
+  }
+
   useEffect(() => {
     return () => {
       stopScanner()
@@ -202,6 +274,47 @@ export function QRScanner({ onScan }: QRScannerProps) {
         >
           ⏹ Stop Scanner
         </button>
+      )}
+
+      {/* Upload QR Image Fallback */}
+      <div className="relative flex items-center justify-center my-2">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border/50" />
+        </div>
+        <span className="relative bg-background px-3 text-xs text-muted-foreground">
+          OR
+        </span>
+      </div>
+
+      <div>
+        <input
+          id="qr-image-input"
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handleImageUpload(file)
+            e.target.value = ''
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => document.getElementById('qr-image-input')?.click()}
+          className="w-full bg-muted hover:bg-muted/80 text-foreground font-medium py-3 rounded-lg text-sm transition-colors flex items-center justify-center gap-2 border border-border/50"
+        >
+          🖼️ Upload QR Code Image
+        </button>
+      </div>
+
+      {uploadStatus && (
+        <div className={`w-full rounded-lg p-3 text-sm ${
+          uploadStatus.startsWith('Scanned successfully')
+            ? 'bg-green-50 border border-green-200 text-green-800'
+            : 'bg-secondary/15 border border-secondary/30 text-foreground'
+        }`}>
+          {uploadStatus}
+        </div>
       )}
 
       {isActive && (
