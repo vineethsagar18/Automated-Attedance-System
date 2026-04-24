@@ -154,7 +154,8 @@ export function Sidebar({ userRole, userName }: Props) {
       initial={isCollapsed ? "closed" : "open"}
       animate={isCollapsed ? "closed" : "open"}
       variants={sidebarVariants}
-      transition={transitionProps}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      transition={transitionProps as any}
       onMouseEnter={() => setIsCollapsed(false)}
       onMouseLeave={() => setIsCollapsed(true)}
     >

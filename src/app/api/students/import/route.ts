@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
       return fail('CSV header must include name and rollNo columns', 400, 'VALIDATION_ERROR')
     }
 
-    const rows: Row[] = lines.slice(1).map((line) => {
+    const rows: Row[] = lines.slice(1).map((line: string) => {
       const cols = parseCsvLine(line)
       return {
         name: cols[nameIdx] ?? '',

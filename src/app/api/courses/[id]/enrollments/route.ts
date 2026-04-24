@@ -70,8 +70,7 @@ export async function PUT(
       ...(studentIds.length > 0
         ? [
             prisma.enrollment.createMany({
-              data: studentIds.map((studentId) => ({ studentId, courseId })),
-              skipDuplicates: true,
+              data: studentIds.map((studentId: string) => ({ studentId, courseId })),
             }),
           ]
         : []),
