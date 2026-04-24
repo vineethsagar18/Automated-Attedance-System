@@ -1,26 +1,188 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 34 100% 90.8%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 8 100% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 24 100% 79%;
+    --secondary-foreground: 0 0% 11%;
+    --muted: 33 100% 86%;
+    --muted-foreground: 0 0% 36%;
+    --accent: 0 100% 76%;
+    --accent-foreground: 0 0% 11%;
+    --destructive: 0 100% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 23 91% 76%;
+    --input: 23 91% 76%;
+    --ring: 8 100% 60%;
+    --radius: 0.9rem;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    font-family: var(--font-body), "Space Grotesk", sans-serif;
+    background-color: hsl(var(--background));
+    background-image: none;
+    color: hsl(var(--foreground));
+    line-height: 1.5;
+    letter-spacing: 0.004em;
+  }
+
+  .app-aurora-bg {
+    background:
+      radial-gradient(circle at 14% 12%, rgba(255, 131, 131, 0.18), transparent 36%),
+      radial-gradient(circle at 86% 10%, rgba(255, 193, 147, 0.32), transparent 35%),
+      linear-gradient(150deg, #ffedce 0%, #ffc193 52%, #ffedce 100%);
+  }
+
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display), "Doto", monospace;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    line-height: 1.15;
+  }
+
+  h2,
+  h3 {
+    line-height: 1.2;
+  }
+
+  .font-mono,
+  code,
+  kbd,
+  pre {
+    font-family: var(--font-mono), "Space Mono", monospace;
+  }
+
+  input,
+  select,
+  textarea {
+    font-family: var(--font-body), "Space Grotesk", sans-serif;
+  }
+
+  .mono-label {
+    font-family: var(--font-mono), "Space Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .premium-shell {
+    border: 1px solid rgba(255, 131, 131, 0.25);
+    background: rgba(255, 255, 255, 0.88);
+  }
+
+  .dot-grid-subtle {
+    background-image: radial-gradient(circle, rgba(255, 131, 131, 0.25) 0.8px, transparent 0.8px);
+    background-size: 16px 16px;
+  }
+
+  .segment-track {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 3px;
+  }
+
+  .segment {
+    height: 7px;
+    border-radius: 0;
+    background: rgba(255, 193, 147, 0.5);
+  }
+
+  .segment.on {
+    background: #ff3737;
+  }
+
+  .soft-enter {
+    animation: soft-enter 380ms cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  }
+
+  @keyframes soft-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* html5-qrcode scanner styles */
+@layer base {
+  #qr-reader {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background-color: #000 !important;
+    position: relative;
+    width: 100%;
+  }
+
+  #qr-reader__scan_region {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  #qr-reader video {
+    max-width: 100%;
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 0.7rem;
+    display: block !important;
+    object-fit: cover;
+  }
+
+  #qr-reader__camera_permission_button,
+  #qr-reader__flip_camera_button,
+  #qr-reader__torch_button,
+  .html5-qrcode-element > div,
+  .html5-qrcode-scanner-status {
+    display: block !important;
+  }
+
+  #qr-reader canvas {
+    display: none !important;
+  }
+
+  .html5-qrcode-element {
+    width: 100% !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .html5-qrcode-element > video {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 0.7rem;
+    display: block !important;
+  }
 }
